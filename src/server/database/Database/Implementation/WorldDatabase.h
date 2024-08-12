@@ -101,6 +101,11 @@ enum WorldDatabaseStatements : uint32
     WORLD_DEL_SPAWNGROUP_MEMBER,
     WORLD_DEL_GAMEOBJECT_ADDON,
 
+    // ###> Custom ###
+    WORLD_UPD_CREATURE_UNIQUE_FACTION,
+    WORLD_UPD_CREATURE_ALL_FACTION_BY_ENTRY,
+    // ###< Custom ###
+
     MAX_WORLDDATABASE_STATEMENTS
 };
 

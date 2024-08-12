@@ -571,6 +571,11 @@ bool Creature::InitEntry(uint32 entry, CreatureData const* data /*= nullptr*/)
     SetEntry(entry);                                        // normal entry always
     m_creatureInfo = cinfo;                                 // map mode related always
 
+    if (data) {
+        if (data->faction > 0)
+            SetFaction(data->faction);
+    }
+
     // equal to player Race field, but creature does not have race
     SetRace(RACE_NONE);
 
@@ -650,6 +655,10 @@ bool Creature::UpdateEntry(uint32 entry, CreatureData const* data /*= nullptr*/,
         SetSheath(SHEATH_STATE_MELEE);
 
     SetFaction(cInfo->faction);
+    if (data) {
+        if (data->faction > 0)
+            SetFaction(data->faction);
+    }
 
     uint32 npcFlags, unitFlags, dynamicFlags;
     ObjectMgr::ChooseCreatureFlags(cInfo, &npcFlags, &unitFlags, &dynamicFlags, data);
@@ -1435,6 +1444,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
     uint32 npcflag = GetNpcFlags();
     uint32 unit_flags = GetUnitFlags();
     uint32 dynamicflags = GetDynamicFlags();
+    uint32 faction = GetFaction();
 
     // check if it's a custom model and if not, use 0 for displayId
     CreatureTemplate const* cinfo = GetCreatureTemplate();

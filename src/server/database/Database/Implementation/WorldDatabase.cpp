@@ -94,6 +94,11 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PrepareStatement(WORLD_UPD_GAMEOBJECT_ZONE_AREA_DATA, "UPDATE gameobject SET zoneId = ?, areaId = ? WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(WORLD_DEL_SPAWNGROUP_MEMBER, "DELETE FROM spawn_group WHERE spawnType = ? AND spawnId = ?", CONNECTION_ASYNC);
     PrepareStatement(WORLD_DEL_GAMEOBJECT_ADDON, "DELETE FROM gameobject_addon WHERE guid = ?", CONNECTION_ASYNC);
+
+    /** ###> Custom ### */
+    PrepareStatement(WORLD_UPD_CREATURE_UNIQUE_FACTION, "UPDATE creature SET faction = ? WHERE guid = ?", CONNECTION_ASYNC);
+    PrepareStatement(WORLD_UPD_CREATURE_ALL_FACTION_BY_ENTRY, "UPDATE creature SET faction = ? WHERE id = ?", CONNECTION_ASYNC);
+    /** ###< Custom ### */
 }
 
 WorldDatabaseConnection::WorldDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

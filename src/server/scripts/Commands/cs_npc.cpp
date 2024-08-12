@@ -355,7 +355,7 @@ public:
     }
 
     //set faction of creature
-    static bool HandleNpcSetFactionIdCommand(ChatHandler* handler, uint32 factionId)
+    static bool HandleNpcSetFactionIdCommand(ChatHandler* handler, uint32 factionId, bool overrideAll)
     {
         if (!sFactionTemplateStore.LookupEntry(factionId))
         {
@@ -375,19 +375,28 @@ public:
 
         creature->SetFaction(factionId);
 
-        // Faction is set in creature_template - not inside creature
-
-        // Update in memory..
-        if (CreatureTemplate const* cinfo = creature->GetCreatureTemplate())
-            const_cast<CreatureTemplate*>(cinfo)->faction = factionId;
-
-        // ..and DB
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_FACTION);
-
+        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_UNIQUE_FACTION);
         stmt->setUInt16(0, uint16(factionId));
-        stmt->setUInt32(1, creature->GetEntry());
-
+        stmt->setUInt32(1, creature->GetSpawnId());
         WorldDatabase.Execute(stmt);
+
+        if (overrideAll) {
+            // Update in memory..
+            if (CreatureTemplate const* cinfo = creature->GetCreatureTemplate())
+                const_cast<CreatureTemplate*>(cinfo)->faction = factionId;
+
+            // ..and DB
+            WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_FACTION);
+            stmt->setUInt16(0, uint16(factionId));
+            stmt->setUInt32(1, creature->GetEntry());
+            WorldDatabase.Execute(stmt);
+
+            stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_ALL_FACTION_BY_ENTRY);
+            // Reset factions to use creature_template by default
+            stmt->setUInt16(0, 0);
+            stmt->setUInt32(1, creature->GetEntry());
+            WorldDatabase.Execute(stmt);
+        }
 
         return true;
     }
