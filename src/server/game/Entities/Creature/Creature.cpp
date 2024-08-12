@@ -365,49 +365,6 @@ void Creature::SendMirrorSound(Player* target, uint8 type)
     }
 }
 
-void Creature::SetOutfit(std::shared_ptr<CreatureOutfit> const & outfit)
-{
-    // Set new outfit
-    if (m_outfit)
-    {
-        // if had old outfit
-        // then delay displayid setting to allow equipment
-        // to change by using invisible model in between
-        SetDisplayId(CreatureOutfit::invisible_model);
-        m_outfit = outfit;
-    }
-    else
-    {
-        // else set new outfit directly since we change from non-outfit->outfit
-        m_outfit = outfit;
-        SetDisplayId(outfit->GetDisplayId());
-    }
-}
-
-void Creature::SendMirrorSound(Player* target, uint8 type)
-{
-    std::shared_ptr<CreatureOutfit> const & outfit = GetOutfit();
-    if (!outfit)
-        return;
-    if (!outfit->npcsoundsid)
-        return;
-    if (auto const* npcsounds = sNPCSoundsStore.LookupEntry(outfit->npcsoundsid))
-    {
-        switch (type)
-        {
-        case 0:
-            PlayDistanceSound(npcsounds->hello, target);
-            break;
-        case 1:
-            PlayDistanceSound(npcsounds->goodbye, target);
-            break;
-        case 2:
-            PlayDistanceSound(npcsounds->pissed, target);
-            break;
-        }
-    }
-}
-
 bool Creature::IsReturningHome() const
 {
     if (GetMotionMaster()->GetCurrentMovementGeneratorType() == HOME_MOTION_TYPE)
