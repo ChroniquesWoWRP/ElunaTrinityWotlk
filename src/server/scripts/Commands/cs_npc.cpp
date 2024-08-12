@@ -828,6 +828,32 @@ public:
         return true;
     }
 
+    static bool HandleNpcSetScaleCommand(ChatHandler* handler, float scale)
+    {
+        Creature* creature = handler->getSelectedCreature();
+        if (!creature)
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        if (scale <= 0.0f)
+        {
+            scale = creature->GetCreatureTemplate()->scale;
+            const_cast<CreatureData*>(creature->GetCreatureData())->size = -1.0f;
+        }
+        else
+        {
+            const_cast<CreatureData*>(creature->GetCreatureData())->size = scale;
+        }
+
+        creature->SetObjectScale(scale);
+        if (!creature->IsPet())
+            creature->SaveToDB();
+        return true;
+    }
+
     //set spawn dist of creature
     static bool HandleNpcSetWanderDistanceCommand(ChatHandler* handler, float option)
     {
