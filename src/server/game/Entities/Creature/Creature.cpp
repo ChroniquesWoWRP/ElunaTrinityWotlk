@@ -112,64 +112,51 @@ VendorItem const* VendorItemData::FindItemCostPair(uint32 item_id, uint32 extend
 
 uint32 CreatureTemplate::GetRandomValidModelId() const
 {
-    uint8 c = 0;
-    uint32 modelIDs[4];
+    if (Modelids.size() == 0) return 0;
 
-    if (Modelid1) modelIDs[c++] = Modelid1;
-    if (Modelid2) modelIDs[c++] = Modelid2;
-    if (Modelid3) modelIDs[c++] = Modelid3;
-    if (Modelid4) modelIDs[c++] = Modelid4;
+    uint32 size = Modelids.size();
 
-    return ((c>0) ? modelIDs[urand(0, c-1)] : 0);
+    return Modelids[urand(0, size-1)];
 }
 
 uint32 CreatureTemplate::GetFirstValidModelId() const
 {
-    if (Modelid1) return Modelid1;
-    if (Modelid2) return Modelid2;
-    if (Modelid3) return Modelid3;
-    if (Modelid4) return Modelid4;
-    return 0;
+    if (Modelids.size() == 0) return 0;
+
+    for (const uint32& val : Modelids)
+    {
+        return val;
+    }
 }
 
 uint32 CreatureTemplate::GetFirstInvisibleModel() const
 {
-    CreatureModelInfo const* modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid1);
-    if (modelInfo && modelInfo->is_trigger)
-        return Modelid1;
+    if (Modelids.size() == 0) return 11686;
 
-    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid2);
-    if (modelInfo && modelInfo->is_trigger)
-        return Modelid2;
+    CreatureModelInfo const* modelInfo;
 
-    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid3);
-    if (modelInfo && modelInfo->is_trigger)
-        return Modelid3;
-
-    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid4);
-    if (modelInfo && modelInfo->is_trigger)
-        return Modelid4;
+    for (const uint32& val : Modelids)
+    {
+        modelInfo = sObjectMgr->GetCreatureModelInfo(val);
+        if (modelInfo && modelInfo->is_trigger)
+            return val;
+    }
 
     return 11686;
 }
 
 uint32 CreatureTemplate::GetFirstVisibleModel() const
 {
-    CreatureModelInfo const* modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid1);
-    if (modelInfo && !modelInfo->is_trigger)
-        return Modelid1;
+    if (Modelids.size() == 0) return 17519;
 
-    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid2);
-    if (modelInfo && !modelInfo->is_trigger)
-        return Modelid2;
+    CreatureModelInfo const* modelInfo;
 
-    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid3);
-    if (modelInfo && !modelInfo->is_trigger)
-        return Modelid3;
-
-    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid4);
-    if (modelInfo && !modelInfo->is_trigger)
-        return Modelid4;
+    for (const uint32& val : Modelids)
+    {
+        modelInfo = sObjectMgr->GetCreatureModelInfo(val);
+        if (modelInfo && !modelInfo->is_trigger)
+            return val;
+    }
 
     return 17519;
 }
@@ -202,10 +189,18 @@ WorldPacket CreatureTemplate::BuildQueryData(LocaleConstant loc) const
     queryTemp.Stats.CreatureFamily = family;
     queryTemp.Stats.Classification = rank;
     memcpy(queryTemp.Stats.ProxyCreatureID, KillCredit, sizeof(uint32) * MAX_KILL_CREDIT);
-    queryTemp.Stats.CreatureDisplayID[0] = Modelid1;
-    queryTemp.Stats.CreatureDisplayID[1] = Modelid2;
-    queryTemp.Stats.CreatureDisplayID[2] = Modelid3;
-    queryTemp.Stats.CreatureDisplayID[3] = Modelid4;
+    // std::cout << "memcpy nb models: " << Modelids.size() << ", size: " << sizeof(uint32) * Modelids.size() << std::endl;
+    // memcpy(queryTemp.Stats.CreatureDisplayIDs.data(), Modelids.data(), sizeof(uint32) * Modelids.size());
+    // std::cout << "memcpyied nb models: " << queryTemp.Stats.CreatureDisplayIDs.size() << ", size: " << sizeof(uint32) * queryTemp.Stats.CreatureDisplayIDs.size() << std::endl;
+    for (size_t i = 0; i < Modelids.size(); ++i)
+    {
+        queryTemp.Stats.CreatureDisplayID[i] = Modelids[i];
+    }
+    
+    // queryTemp.Stats.CreatureDisplayID[0] = Modelid1;
+    // queryTemp.Stats.CreatureDisplayID[1] = Modelid2;
+    // queryTemp.Stats.CreatureDisplayID[2] = Modelid3;
+    // queryTemp.Stats.CreatureDisplayID[3] = Modelid4;
     queryTemp.Stats.HpMulti = ModHealth;
     queryTemp.Stats.EnergyMulti = ModMana;
     queryTemp.Stats.Leader = RacialLeader;
@@ -1450,9 +1445,13 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
     CreatureTemplate const* cinfo = GetCreatureTemplate();
     if (cinfo)
     {
-        if (displayId == cinfo->Modelid1 || displayId == cinfo->Modelid2 ||
-            displayId == cinfo->Modelid3 || displayId == cinfo->Modelid4)
-            displayId = 0;
+        for (const uint32& val : cinfo->Modelids)
+        {
+            if (displayId == val) {
+                displayId = 0;
+                break;
+            }
+        }
 
         if (npcflag == cinfo->npcflag)
             npcflag = 0;

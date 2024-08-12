@@ -39,6 +39,7 @@ WorldPacket const* WorldPackets::Query::QueryCreatureResponse::Write()
         _worldPacket << uint32(Stats.Classification);                       // Creature Rank (elite, boss, etc)
         _worldPacket.append(Stats.ProxyCreatureID, MAX_KILL_CREDIT);        // new in 3.1, kill credit
         _worldPacket.append(Stats.CreatureDisplayID, MAX_CREATURE_MODELS);  // Modelid
+        // _worldPacket.append(Stats.CreatureDisplayIDs.data(), Stats.CreatureDisplayIDs.size());  // Modelid
         _worldPacket << float(Stats.HpMulti);                               // dmg/hp modifier
         _worldPacket << float(Stats.EnergyMulti);                           // dmg/mana modifier
         _worldPacket << uint8(Stats.Leader);

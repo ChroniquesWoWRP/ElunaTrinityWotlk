@@ -138,8 +138,8 @@ struct boss_felmyst : public BossAI
             if (Creature* madrigosa = instance->GetCreature(DATA_MADRIGOSA))
                 me->Relocate(madrigosa);
 
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
-        me->SetNativeDisplayId(me->GetCreatureTemplate()->Modelid1);
+        me->SetDisplayId(me->GetCreatureTemplate()->Modelids[0]);
+        me->SetNativeDisplayId(me->GetCreatureTemplate()->Modelids[0]);
     }
 
     void Reset() override

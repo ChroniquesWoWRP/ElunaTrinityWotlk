@@ -204,7 +204,7 @@ struct npc_pit_of_saron_icicle : public PassiveAI
 {
     npc_pit_of_saron_icicle(Creature* creature) : PassiveAI(creature)
     {
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+        me->SetDisplayId(me->GetCreatureTemplate()->Modelids[0]);
     }
 
     void IsSummonedBy(WorldObject* summoner) override

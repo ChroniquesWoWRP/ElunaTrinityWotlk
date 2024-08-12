@@ -285,7 +285,8 @@ static const uint32 PET_FOCUS_REGEN_INTERVAL = 4 * IN_MILLISECONDS;
 static const uint32 CREATURE_NOPATH_EVADE_TIME = 5 * IN_MILLISECONDS;
 
 static const uint8 MAX_KILL_CREDIT = 2;
-static const uint32 MAX_CREATURE_MODELS = 4;
+static const uint32 MAX_CREATURE_MODELS_IN_CREATURE_TABLE = 4;
+static const uint32 MAX_CREATURE_MODELS = 32;
 static const uint32 MAX_CREATURE_QUEST_ITEMS = 6;
 static const uint32 MAX_CREATURE_SPELLS = 8;
 
@@ -295,10 +296,7 @@ struct TC_GAME_API CreatureTemplate
     uint32  Entry;
     uint32  DifficultyEntry[MAX_DIFFICULTY - 1];
     uint32  KillCredit[MAX_KILL_CREDIT];
-    uint32  Modelid1;
-    uint32  Modelid2;
-    uint32  Modelid3;
-    uint32  Modelid4;
+    std::vector<uint32> Modelids;
     std::string  Name;
     std::string  Title;
     std::string  IconName;

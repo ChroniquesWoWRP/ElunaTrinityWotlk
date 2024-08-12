@@ -197,7 +197,7 @@ public:
                 }
                 PlayerGUID = player->GetGUID();
                 Start(true, false, PlayerGUID);
-                me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+                me->SetDisplayId(me->GetCreatureTemplate()->Modelids[0]);
                 me->RemoveUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
             }
             return;

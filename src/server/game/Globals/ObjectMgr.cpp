@@ -536,10 +536,33 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     for (uint8 i = 0; i < MAX_KILL_CREDIT; ++i)
         creatureTemplate.KillCredit[i] = fields[4 + i].GetUInt32();
 
-    creatureTemplate.Modelid1         = fields[6].GetUInt32();
-    creatureTemplate.Modelid2         = fields[7].GetUInt32();
-    creatureTemplate.Modelid3         = fields[8].GetUInt32();
-    creatureTemplate.Modelid4         = fields[9].GetUInt32();
+    for (uint8 i = 0; i < MAX_CREATURE_MODELS_IN_CREATURE_TABLE; i++)
+    {
+        if (fields[6 + i].GetUInt32() > 0)
+            creatureTemplate.Modelids.push_back(fields[6 + i].GetUInt32());
+    }
+    
+
+    WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_ADDITIONAL_MODELS);
+    stmt->setUInt32(0, entry);
+    PreparedQueryResult result = WorldDatabase.Query(stmt);
+
+    if (result) {
+        do {
+            if (creatureTemplate.Modelids.size() >= MAX_CREATURE_MODELS) {
+                TC_LOG_WARN("server.loading", ">> Creature (Entry: {}) has more than {} models. Skip other models.", entry, MAX_CREATURE_MODELS);
+                break;
+            }
+            Field* fields = result->Fetch();
+
+            creatureTemplate.Modelids.push_back(fields[0].GetUInt32());
+        } while (result->NextRow());
+    }
+
+    // creatureTemplate.Modelid1         = fields[6].GetUInt32();
+    // creatureTemplate.Modelid2         = fields[7].GetUInt32();
+    // creatureTemplate.Modelid3         = fields[8].GetUInt32();
+    // creatureTemplate.Modelid4         = fields[9].GetUInt32();
     creatureTemplate.Name             = fields[10].GetString();
     creatureTemplate.Title            = fields[11].GetString();
     creatureTemplate.IconName         = fields[12].GetString();
@@ -1039,68 +1062,21 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
     // used later for scale
     CreatureDisplayInfoEntry const* displayScaleEntry = nullptr;
 
-    if (cInfo->Modelid1)
+    for (size_t i = 0; i < cInfo->Modelids.size(); ++i)
     {
-        CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(cInfo->Modelid1);
+        uint32 val = cInfo->Modelids[i];
+        CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(val);
         if (!displayEntry)
         {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing Modelid1 id ({}), this can crash the client.", cInfo->Entry, cInfo->Modelid1);
-            const_cast<CreatureTemplate*>(cInfo)->Modelid1 = 0;
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing Modelid1 id ({}), this can crash the client.", cInfo->Entry, val);
+            const_cast<CreatureTemplate*>(cInfo)->Modelids[i] = 0;
         }
         else
             displayScaleEntry = displayEntry;
 
-        CreatureModelInfo const* modelInfo = GetCreatureModelInfo(cInfo->Modelid1);
+        CreatureModelInfo const* modelInfo = GetCreatureModelInfo(val);
         if (!modelInfo)
-            TC_LOG_ERROR("sql.sql", "No model data exist for `Modelid1` = {} listed by creature (Entry: {}).", cInfo->Modelid1, cInfo->Entry);
-    }
-
-    if (cInfo->Modelid2)
-    {
-        CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(cInfo->Modelid2);
-        if (!displayEntry)
-        {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing Modelid2 id ({}), this can crash the client.", cInfo->Entry, cInfo->Modelid2);
-            const_cast<CreatureTemplate*>(cInfo)->Modelid2 = 0;
-        }
-        else if (!displayScaleEntry)
-            displayScaleEntry = displayEntry;
-
-        CreatureModelInfo const* modelInfo = GetCreatureModelInfo(cInfo->Modelid2);
-        if (!modelInfo)
-            TC_LOG_ERROR("sql.sql", "No model data exist for `Modelid2` = {} listed by creature (Entry: {}).", cInfo->Modelid2, cInfo->Entry);
-    }
-
-    if (cInfo->Modelid3)
-    {
-        CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(cInfo->Modelid3);
-        if (!displayEntry)
-        {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing Modelid3 id ({}), this can crash the client.", cInfo->Entry, cInfo->Modelid3);
-            const_cast<CreatureTemplate*>(cInfo)->Modelid3 = 0;
-        }
-        else if (!displayScaleEntry)
-            displayScaleEntry = displayEntry;
-
-        CreatureModelInfo const* modelInfo = GetCreatureModelInfo(cInfo->Modelid3);
-        if (!modelInfo)
-            TC_LOG_ERROR("sql.sql", "No model data exist for `Modelid3` = {} listed by creature (Entry: {}).", cInfo->Modelid3, cInfo->Entry);
-    }
-
-    if (cInfo->Modelid4)
-    {
-        CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(cInfo->Modelid4);
-        if (!displayEntry)
-        {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing Modelid4 id ({}), this can crash the client.", cInfo->Entry, cInfo->Modelid4);
-            const_cast<CreatureTemplate*>(cInfo)->Modelid4 = 0;
-        }
-        else if (!displayScaleEntry)
-            displayScaleEntry = displayEntry;
-
-        CreatureModelInfo const* modelInfo = GetCreatureModelInfo(cInfo->Modelid4);
-        if (!modelInfo)
-            TC_LOG_ERROR("sql.sql", "No model data exist for `Modelid4` = {} listed by creature (Entry: {}).", cInfo->Modelid4, cInfo->Entry);
+            TC_LOG_ERROR("sql.sql", "No model data exist for `Modelid` = {} listed by creature (Entry: {}).", val, cInfo->Entry);
     }
 
     if (!displayScaleEntry)
@@ -10595,26 +10571,31 @@ void ObjectMgr::InitializeQueriesData(QueryDataGroup mask)
     Trinity::ThreadPool pool;
 
     // Initialize Query data for creatures
+    std::cout << "creature->InitializeQueryData()" << std::endl;
     if (mask & QUERY_DATA_CREATURES)
         for (auto& creatureTemplatePair : _creatureTemplateStore)
             pool.PostWork([creature = &creatureTemplatePair.second]() { creature->InitializeQueryData(); });
 
     // Initialize Query Data for gameobjects
+    std::cout << "gobj->InitializeQueryData()" << std::endl;
     if (mask & QUERY_DATA_GAMEOBJECTS)
         for (auto& gameObjectTemplatePair : _gameObjectTemplateStore)
             pool.PostWork([gobj = &gameObjectTemplatePair.second]() { gobj->InitializeQueryData(); });
 
     // Initialize Query Data for items
+    std::cout << "item->InitializeQueryData()" << std::endl;
     if (mask & QUERY_DATA_ITEMS)
         for (auto& itemTemplatePair : _itemTemplateStore)
             pool.PostWork([item = &itemTemplatePair.second]() { item->InitializeQueryData(); });
 
     // Initialize Query Data for quests
+    std::cout << "quest->InitializeQueryData()" << std::endl;
     if (mask & QUERY_DATA_QUESTS)
         for (auto& questTemplatePair : _questTemplates)
             pool.PostWork([quest = questTemplatePair.second.get()]() { quest->InitializeQueryData(); });
 
     // Initialize Quest POI data
+    std::cout << "poi->InitializeQueryData()" << std::endl;
     if (mask & QUERY_DATA_POIS)
         for (auto& poiWrapperPair : _questPOIStore)
             pool.PostWork([poi = &poiWrapperPair.second]() { poi->InitializeQueryData(); });

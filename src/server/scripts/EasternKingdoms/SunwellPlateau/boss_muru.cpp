@@ -366,7 +366,7 @@ struct npc_dark_fiend : public ScriptedAI
 
     void Initialize()
     {
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
+        me->SetDisplayId(me->GetCreatureTemplate()->Modelids[1]);
         me->SetReactState(REACT_PASSIVE);
         DoCast(me, SPELL_DARKFIEND_SKIN, true);
 

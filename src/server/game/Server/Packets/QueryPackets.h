@@ -53,6 +53,7 @@ namespace WorldPackets
             uint32 Classification = 0;
             uint32 ProxyCreatureID[MAX_KILL_CREDIT] = { };
             uint32 CreatureDisplayID[MAX_CREATURE_MODELS] = { };
+            // std::vector<uint32> CreatureDisplayIDs;
             float HpMulti = 0.0f;
             float EnergyMulti = 0.0f;
             bool Leader = false;
