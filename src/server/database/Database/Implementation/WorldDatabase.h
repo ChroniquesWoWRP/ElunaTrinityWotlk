@@ -104,6 +104,7 @@ enum WorldDatabaseStatements : uint32
     // ###> Custom ###
     WORLD_UPD_CREATURE_UNIQUE_FACTION,
     WORLD_UPD_CREATURE_ALL_FACTION_BY_ENTRY,
+    WORLD_SEL_CREATURE_ADDITIONAL_MODELS,
     // ###< Custom ###
 
     MAX_WORLDDATABASE_STATEMENTS

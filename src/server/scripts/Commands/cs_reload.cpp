@@ -480,24 +480,6 @@ public:
         return true;
     }
 
-    static bool HandleReloadCreatureTemplateOutfitsCommand(ChatHandler* handler, const char* /*args*/)
-    {
-        TC_LOG_INFO("misc", "Loading Creature Outfits... (`creature_template_outfits`)");
-        sObjectMgr->LoadCreatureOutfits();
-        sMapMgr->DoForAllMaps([](Map* map)
-        {
-            for (auto e : map->GetCreatureBySpawnIdStore())
-            {
-                auto const & outfit = e.second->GetOutfit();
-                if (outfit && outfit->GetId())
-                    e.second->SetDisplayId(outfit->GetId());
-            }
-        });
-
-        handler->SendGlobalGMSysMessage("DB table `creature_template_outfits` reloaded.");
-        return true;
-    }
-
     static bool HandleReloadCreatureQuestStarterCommand(ChatHandler* handler, char const* /*args*/)
     {
         TC_LOG_INFO("misc", "Loading Quests Relations... (`creature_queststarter`)");

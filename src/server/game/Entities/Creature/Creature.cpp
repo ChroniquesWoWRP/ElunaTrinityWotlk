@@ -121,25 +121,27 @@ uint32 CreatureTemplate::GetRandomValidModelId() const
 
 uint32 CreatureTemplate::GetFirstValidModelId() const
 {
-    if (Modelids.size() == 0) return 0;
-
-    for (const uint32& val : Modelids)
-    {
-        return val;
+    if (Modelids.size() > 0) {
+        for (const uint32& val : Modelids)
+        {
+            return val;
+        }
     }
+
+    return 0;
 }
 
 uint32 CreatureTemplate::GetFirstInvisibleModel() const
 {
-    if (Modelids.size() == 0) return 11686;
+    if (Modelids.size() > 0) {
+        CreatureModelInfo const* modelInfo;
 
-    CreatureModelInfo const* modelInfo;
-
-    for (const uint32& val : Modelids)
-    {
-        modelInfo = sObjectMgr->GetCreatureModelInfo(val);
-        if (modelInfo && modelInfo->is_trigger)
-            return val;
+        for (const uint32& val : Modelids)
+        {
+            modelInfo = sObjectMgr->GetCreatureModelInfo(val);
+            if (modelInfo && modelInfo->is_trigger)
+                return val;
+        }
     }
 
     return 11686;
@@ -147,15 +149,15 @@ uint32 CreatureTemplate::GetFirstInvisibleModel() const
 
 uint32 CreatureTemplate::GetFirstVisibleModel() const
 {
-    if (Modelids.size() == 0) return 17519;
+    if (Modelids.size() > 0) {
+        CreatureModelInfo const* modelInfo;
 
-    CreatureModelInfo const* modelInfo;
-
-    for (const uint32& val : Modelids)
-    {
-        modelInfo = sObjectMgr->GetCreatureModelInfo(val);
-        if (modelInfo && !modelInfo->is_trigger)
-            return val;
+        for (const uint32& val : Modelids)
+        {
+            modelInfo = sObjectMgr->GetCreatureModelInfo(val);
+            if (modelInfo && !modelInfo->is_trigger)
+                return val;
+        }
     }
 
     return 17519;
@@ -1503,6 +1505,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
     stmt->setUInt32(index++, unit_flags);
     stmt->setUInt32(index++, dynamicflags);
     stmt->setFloat(index++, data.size);
+    stmt->setUInt32(index++, faction);
     trans->Append(stmt);
 
     WorldDatabase.CommitTransaction(trans);
