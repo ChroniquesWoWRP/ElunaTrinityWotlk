@@ -10485,6 +10485,16 @@ InventoryResult Player::CanStoreItem(uint8 bag, uint8 slot, ItemPosCountVec &des
     TC_LOG_DEBUG("entities.player.items", "Player::CanStoreItem: Bag: {}, Slot: {}, Item: {}, Count: {}", bag, slot, entry, count);
 
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(entry);
+
+#ifdef ELUNA
+    if (Eluna* e = GetEluna())
+    {
+        if (!e->OnBeforeAddItem(const_cast<Player*>(this), pProto->ItemId, pProto->Class, pProto->SubClass)) {
+            return EQUIP_ERR_INVENTORY_FULL;
+        }
+    }
+#endif
+
     if (!pProto)
     {
         if (no_space_count)
@@ -11397,6 +11407,14 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
                         return swap ? EQUIP_ERR_ITEMS_CANT_BE_SWAPPED : EQUIP_ERR_INVENTORY_FULL;
                 }
             }
+
+#ifdef ELUNA
+            if (Eluna* e = GetEluna()) {
+                if (!e->OnCanEquipItem(const_cast<Player*>(this), pItem))
+                    return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+            }
+#endif
+
             dest = ((INVENTORY_SLOT_BAG_0 << 8) | eslot);
             return EQUIP_ERR_OK;
         }
@@ -12286,6 +12304,12 @@ void Player::RemoveItem(uint8 bag, uint8 slot, bool update)
     Item* pItem = GetItemByPos(bag, slot);
     if (pItem)
     {
+// #ifdef ELUNA
+//         if (Eluna* e = GetEluna()) {
+//             if (!e->BeforeOnUnequip(this, pItem)) return;
+//         }
+// #endif
+
         TC_LOG_DEBUG("entities.player.items", "Player::RemoveItem: Player '{}' ({}), Bag: {}, Slot: {}, Item: {}",
             GetName(), GetGUID().ToString(), bag, slot, pItem->GetEntry());
 
@@ -12337,8 +12361,10 @@ void Player::RemoveItem(uint8 bag, uint8 slot, bool update)
                             break;
                     }
 #ifdef ELUNA
-                    if (Eluna* e = GetEluna())
+                    if (Eluna* e = GetEluna()) {
                         e->OnItemUnEquip(this, pItem, slot);
+                        e->OnUnequip(this, pItem, bag, slot);
+                    }
 #endif
                 }
             }
@@ -12361,6 +12387,7 @@ void Player::RemoveItem(uint8 bag, uint8 slot, bool update)
         pItem->SetSlot(NULL_SLOT);
         if (IsInWorld() && update)
             pItem->SendUpdateToPlayer(this);
+            
     }
 }
 
@@ -12415,6 +12442,12 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
     Item* pItem = GetItemByPos(bag, slot);
     if (pItem)
     {
+// #ifdef ELUNA
+//         if (Eluna* e = GetEluna()) {
+//             if (!e->BeforeOnUnequip(this, pItem)) return;
+//         }
+// #endif
+
         TC_LOG_DEBUG("entities.player.items", "Player::DestroyItem: Player '{}' ({}), Bag: {}, Slot: {}, Item: {}",
             GetName(), GetGUID().ToString(), bag, slot, pItem->GetEntry());
         // Also remove all contained items if the item is a bag.
@@ -12480,8 +12513,10 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
                 // equipment visual show
                 SetVisibleItemSlot(slot, nullptr);
 #ifdef ELUNA
-                if (Eluna* e = GetEluna())
+                if (Eluna* e = GetEluna()) {
                     e->OnItemUnEquip(this, pItem, slot);
+                    e->OnUnequip(this, pItem, bag, slot);
+                }
 #endif
             }
 

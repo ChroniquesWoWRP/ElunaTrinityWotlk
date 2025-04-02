@@ -81,6 +81,7 @@ class TC_GAME_API Weather
         /// For which zone is this weather?
         uint32 GetZone() const { return m_zone; };
         uint32 GetScriptId() const { return m_weatherChances->ScriptId; }
+        uint32 GetWeatherCurrent() const;
 
     private:
 

@@ -282,6 +282,11 @@ void Weather::SetWeather(WeatherType type, float intensity)
     UpdateWeather();
 }
 
+uint32 Weather::GetWeatherCurrent() const
+{
+    return static_cast<uint32>(GetWeatherState());
+}
+
 /// Get the sound number associated with the current weather
 WeatherState Weather::GetWeatherState() const
 {

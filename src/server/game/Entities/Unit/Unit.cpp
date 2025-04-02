@@ -10359,6 +10359,7 @@ bool Unit::IsStandState() const
 
 void Unit::SetStandState(UnitStandStateType state)
 {
+    uint8 previousState = GetStandState();
     SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_STAND_STATE, state);
 
     if (state == UNIT_STAND_STATE_STAND)
@@ -10370,6 +10371,15 @@ void Unit::SetStandState(UnitStandStateType state)
         data << (uint8)state;
         ToPlayer()->SendDirectMessage(&data);
     }
+
+#ifdef ELUNA
+    if (Eluna* e = GetEluna()) {
+        if (IsPlayer()) {
+            uint8 newState = GetStandState();
+            e->OnStandStateChange(ToPlayer(), previousState, newState);
+        }
+    }
+#endif
 }
 
 bool Unit::IsPolymorphed() const
