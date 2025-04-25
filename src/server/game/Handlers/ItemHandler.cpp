@@ -300,13 +300,21 @@ void WorldSession::HandleDestroyItemOpcode(WorldPacket& recvData)
         return;
     }
 
+    uint32 itemEntry = pItem->GetEntry();
+    uint32 realCount = pItem->GetCount();
     if (count)
     {
         uint32 i_count = count;
         _player->DestroyItemCount(pItem, i_count, true);
+        realCount = count - i_count;
     }
     else
         _player->DestroyItem(bag, slot, true);
+
+#ifdef ELUNA
+    if (Eluna* e = sWorld->GetEluna())
+        e->OnDestroyItem(_player, itemEntry, realCount);
+#endif
 }
 
 // Only _static_ data send in this packet !!!

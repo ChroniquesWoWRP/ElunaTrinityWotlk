@@ -10489,7 +10489,7 @@ InventoryResult Player::CanStoreItem(uint8 bag, uint8 slot, ItemPosCountVec &des
 #ifdef ELUNA
     if (Eluna* e = GetEluna())
     {
-        if (!e->OnBeforeAddItem(const_cast<Player*>(this), pProto->ItemId, pProto->Class, pProto->SubClass)) {
+        if (!e->OnBeforeAddItem(const_cast<Player*>(this), entry, count, nullptr == pItem)) {
             return EQUIP_ERR_INVENTORY_FULL;
         }
     }
@@ -11438,6 +11438,13 @@ InventoryResult Player::CanUnequipItem(uint16 pos, bool swap) const
     TC_LOG_DEBUG("entities.player.items", "Player::CanUnequipItem: Player '{}' ({}), Slot: {}, Item: {}, Count: {}",
         GetName(), GetGUID().ToString(), pos, pItem->GetEntry(), pItem->GetCount());
 
+#ifdef ELUNA
+    if (Eluna* e = GetEluna()) {
+        if (!e->OnCanUnequipItem(const_cast<Player*>(this), pItem))
+            return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+    }
+#endif
+
     ItemTemplate const* pProto = pItem->GetTemplate();
     if (!pProto)
         return EQUIP_ERR_ITEM_NOT_FOUND;
@@ -11943,8 +11950,10 @@ Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update
         }
 
 #ifdef ELUNA
-        if (Eluna* e = GetEluna())
+        if (Eluna* e = GetEluna()) {
             e->OnAdd(this, pItem);
+            e->OnAddItem(this, pItem);
+        }
 #endif
     }
     return pItem;
@@ -12304,12 +12313,6 @@ void Player::RemoveItem(uint8 bag, uint8 slot, bool update)
     Item* pItem = GetItemByPos(bag, slot);
     if (pItem)
     {
-// #ifdef ELUNA
-//         if (Eluna* e = GetEluna()) {
-//             if (!e->BeforeOnUnequip(this, pItem)) return;
-//         }
-// #endif
-
         TC_LOG_DEBUG("entities.player.items", "Player::RemoveItem: Player '{}' ({}), Bag: {}, Slot: {}, Item: {}",
             GetName(), GetGUID().ToString(), bag, slot, pItem->GetEntry());
 
@@ -12442,11 +12445,6 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
     Item* pItem = GetItemByPos(bag, slot);
     if (pItem)
     {
-// #ifdef ELUNA
-//         if (Eluna* e = GetEluna()) {
-//             if (!e->BeforeOnUnequip(this, pItem)) return;
-//         }
-// #endif
 
         TC_LOG_DEBUG("entities.player.items", "Player::DestroyItem: Player '{}' ({}), Bag: {}, Slot: {}, Item: {}",
             GetName(), GetGUID().ToString(), bag, slot, pItem->GetEntry());
@@ -12550,6 +12548,11 @@ uint32 Player::DestroyItemCount(uint32 itemEntry, uint32 count, bool update, boo
     TC_LOG_DEBUG("entities.player.items", "Player::DestroyItemCount: Player '{}' ({}), Item: {}, Count: {}",
         GetName(), GetGUID().ToString(), itemEntry, count);
     uint32 remcount = 0;
+
+// #ifdef ELUNA
+//     if (Eluna* e = GetEluna())
+//         e->OnDestroyItem(this, itemEntry, count);
+// #endif
 
     // in inventory
     for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; ++i)
@@ -12830,6 +12833,7 @@ void Player::DestroyItemCount(Item* pItem, uint32 &count, bool update)
     if (!pItem)
         return;
 
+    uint32 itemEntry = pItem->GetEntry();
     TC_LOG_DEBUG("entities.player.items", "Player::DestroyItemCount: Player '{}' ({}), Item ({}, Entry: {}), Count: {}",
         GetName(), GetGUID().ToString(), pItem->GetGUID().ToString(), pItem->GetEntry(), count);
 
