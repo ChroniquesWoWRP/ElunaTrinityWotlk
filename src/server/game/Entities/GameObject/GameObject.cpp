@@ -2229,7 +2229,7 @@ void GameObject::Use(Unit* user)
             Player* player = user->ToPlayer();
 #ifdef ELUNA
             if (Eluna* e = GetEluna())
-                if (!e->OnUseBarber(player, this)) return;
+                if (!e->OnUseBarber(player, this, false)) return;
 #endif
 
             // fallback, will always work

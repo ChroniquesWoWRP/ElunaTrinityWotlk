@@ -12391,6 +12391,9 @@ void Player::RemoveItem(uint8 bag, uint8 slot, bool update)
         if (IsInWorld() && update)
             pItem->SendUpdateToPlayer(this);
             
+#ifdef ELUNA
+        if (Eluna* e = GetEluna()) e->OnUnequipEnded(this);
+#endif
     }
 }
 

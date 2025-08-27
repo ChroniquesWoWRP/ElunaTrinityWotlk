@@ -1319,6 +1319,12 @@ void WorldSession::HandleAlterAppearance(WorldPacket& recvData)
         return;
     }
 
+#ifdef ELUNA
+    if (Eluna* e = sWorld->GetEluna())
+        if (!e->OnUseBarber(_player, go, true)) return;
+#endif
+
+
     SendBarberShopResult(BARBER_SHOP_RESULT_SUCCESS);
 
     _player->ModifyMoney(-int32(cost));                     // it isn't free
