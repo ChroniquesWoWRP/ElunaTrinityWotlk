@@ -576,10 +576,10 @@ public:
             }
 
             // stop flight if need
-            if (_player->IsInFlight())
-                _player->FinishTaxiFlight();
-            else
-                _player->SaveRecallPosition(); // save only in non-flight case
+            if (_player->IsInFlight()) _player->FinishTaxiFlight();
+            if (target->IsInFlight()) target->FinishTaxiFlight();
+            
+            target->SaveRecallPosition();
 
             // before GM
             float x, y, z;

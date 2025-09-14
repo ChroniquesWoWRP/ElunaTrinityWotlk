@@ -31,6 +31,10 @@
 #include "World.h"
 #include "WorldPacket.h"
 
+#ifdef ELUNA
+    #include "LuaEngine/snapshots/PlayerItemSnapshot.h"
+#endif
+
 void WorldSession::HandleSplitItemOpcode(WorldPacket& recvData)
 {
     //TC_LOG_DEBUG("network", "WORLD: CMSG_SPLIT_ITEM");
@@ -300,20 +304,24 @@ void WorldSession::HandleDestroyItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    uint32 itemEntry = pItem->GetEntry();
+    Snapshots::PlayerItemSnapshot snapshot = Snapshots::MakeSnapshot(pItem, _player);
+    // uint32 itemEntry = pItem->GetEntry();
     uint32 realCount = pItem->GetCount();
     if (count)
     {
         uint32 i_count = count;
         _player->DestroyItemCount(pItem, i_count, true);
         realCount = count - i_count;
+        #ifdef ELUNA
+            snapshot.count = realCount;
+        #endif
     }
     else
         _player->DestroyItem(bag, slot, true);
 
 #ifdef ELUNA
-    if (Eluna* e = sWorld->GetEluna())
-        e->OnDestroyItem(_player, itemEntry, realCount);
+    if (Eluna* e = sWorld->GetEluna()) e->OnDestroyItem(_player, snapshot);
+        // e->OnDestroyItem(_player, itemEntry, realCount);
 #endif
 }
 
