@@ -307,6 +307,8 @@ void Creature::RemoveFromWorld()
 #ifdef ELUNA
         if (Eluna* e = GetEluna())
             e->OnRemoveFromWorld(this);
+        if (Eluna* e = GetEluna())
+            e->OnCreatureRemove(this);
 #endif
         if (GetZoneScript())
             GetZoneScript()->OnCreatureRemove(this);
@@ -1187,6 +1189,11 @@ bool Creature::Create(ObjectGuid::LowType guidlow, Map* map, uint32 phaseMask, u
     }
 
     GetThreatManager().Initialize();
+
+#ifdef ELUNA
+        if (Eluna* e = GetEluna())
+            e->OnCreatureAdd(this);
+#endif
 
     return true;
 }

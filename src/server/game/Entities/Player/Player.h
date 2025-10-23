@@ -1036,12 +1036,15 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         /// Handles said message in regular chat based on declared language and in config pre-defined Range.
         void Say(std::string_view text, Language language, WorldObject const* = nullptr) override;
+        void Say(std::string_view text, Language language, float radius, WorldObject const* = nullptr) override;
         void Say(uint32 textId, WorldObject const* target = nullptr) override;
         /// Handles yelled message in regular chat based on declared language and in config pre-defined Range.
         void Yell(std::string_view text, Language language, WorldObject const* = nullptr) override;
+        void Yell(std::string_view text, Language language, float radius, WorldObject const* = nullptr) override;
         void Yell(uint32 textId, WorldObject const* target = nullptr) override;
         /// Outputs an universal text which is supposed to be an action.
         void TextEmote(std::string_view text, WorldObject const* = nullptr, bool = false) override;
+        void TextEmote(std::string_view text, float radius, WorldObject const* = nullptr, bool = false) override;
         void TextEmote(uint32 textId, WorldObject const* target = nullptr, bool isBossEmote = false) override;
         /// Handles whispers from Addons and players based on sender, receiver's guid and language.
         void Whisper(std::string_view text, Language language, Player* receiver, bool = false) override;

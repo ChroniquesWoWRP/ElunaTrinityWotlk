@@ -13699,6 +13699,24 @@ void Unit::TextEmote(std::string_view text, WorldObject const* target /*= nullpt
     Talk(text, isBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, LANG_UNIVERSAL, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), target);
 }
 
+void Unit::Say(std::string_view text, Language language, float radius, WorldObject const* target /*= nullptr*/)
+{
+    if (0 >= radius) radius = sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY);
+    Talk(text, CHAT_MSG_MONSTER_SAY, language, radius, target);
+}
+
+void Unit::Yell(std::string_view text, Language language, float radius, WorldObject const* target /*= nullptr*/)
+{
+    if (0 >= radius) radius = sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL);
+    Talk(text, CHAT_MSG_MONSTER_YELL, language, radius, target);
+}
+
+void Unit::TextEmote(std::string_view text, float radius, WorldObject const* target /*= nullptr*/, bool isBossEmote /*= false*/)
+{
+    if (0 >= radius) radius = sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE);
+    Talk(text, isBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, LANG_UNIVERSAL, radius, target);
+}
+
 void Unit::Whisper(std::string_view text, Language language, Player* target, bool isBossWhisper /*= false*/)
 {
     if (!target)

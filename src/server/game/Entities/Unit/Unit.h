@@ -1807,8 +1807,11 @@ class TC_GAME_API Unit : public WorldObject
 
         virtual void Talk(std::string_view text, ChatMsg msgType, Language language, float textRange, WorldObject const* target);
         virtual void Say(std::string_view text, Language language, WorldObject const* target = nullptr);
+        virtual void Say(std::string_view text, Language language, float radius, WorldObject const* target = nullptr);
         virtual void Yell(std::string_view text, Language language, WorldObject const* target = nullptr);
+        virtual void Yell(std::string_view text, Language language, float radius, WorldObject const* target = nullptr);
         virtual void TextEmote(std::string_view text, WorldObject const* target = nullptr, bool isBossEmote = false);
+        virtual void TextEmote(std::string_view text, float radius, WorldObject const* target = nullptr, bool isBossEmote = false);
         virtual void Whisper(std::string_view text, Language language, Player* target, bool isBossWhisper = false);
         virtual void Talk(uint32 textId, ChatMsg msgType, float textRange, WorldObject const* target);
         virtual void Say(uint32 textId, WorldObject const* target = nullptr);

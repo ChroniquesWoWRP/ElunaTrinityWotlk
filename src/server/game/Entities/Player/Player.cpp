@@ -4599,6 +4599,11 @@ void Player::KillPlayer()
 
     // update visibility
     UpdateObjectVisibility();
+
+#ifdef ELUNA
+        if (Eluna* e = GetEluna())
+            e->OnJustDied(this);
+#endif
 }
 
 void Player::OfflineResurrect(ObjectGuid const& guid, CharacterDatabaseTransaction trans)
@@ -20815,6 +20820,17 @@ void Player::Say(std::string_view text, Language language, WorldObject const* /*
     SendMessageToSetInRange(&data, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY), true, false, true);
 }
 
+void Player::Say(std::string_view text, Language language, float radius, WorldObject const* /*= nullptr*/)
+{
+    std::string _text(text);
+    sScriptMgr->OnPlayerChat(this, CHAT_MSG_SAY, language, _text);
+
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_SAY, language, this, this, _text);
+    if (0 >= radius) radius = sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY);
+    SendMessageToSetInRange(&data, radius, true, false, true);
+}
+
 void Player::Say(uint32 textId, WorldObject const* target /*= nullptr*/)
 {
     Talk(textId, CHAT_MSG_SAY, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY), target);
@@ -20830,6 +20846,17 @@ void Player::Yell(std::string_view text, Language language, WorldObject const* /
     SendMessageToSetInRange(&data, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL), true, false, true);
 }
 
+void Player::Yell(std::string_view text, Language language, float radius, WorldObject const* /*= nullptr*/)
+{
+    std::string _text(text);
+    sScriptMgr->OnPlayerChat(this, CHAT_MSG_YELL, language, _text);
+
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_YELL, language, this, this, _text);
+    if (0 >= radius) radius = sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL);
+    SendMessageToSetInRange(&data, radius, true, false, true);
+}
+
 void Player::Yell(uint32 textId, WorldObject const* target /*= nullptr*/)
 {
     Talk(textId, CHAT_MSG_YELL, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL), target);
@@ -20843,6 +20870,17 @@ void Player::TextEmote(std::string_view text, WorldObject const* /*= nullptr*/, 
     WorldPacket data;
     ChatHandler::BuildChatPacket(data, CHAT_MSG_EMOTE, LANG_UNIVERSAL, this, this, _text);
     SendMessageToSetInRange(&data, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), true, !GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHAT), true);
+}
+
+void Player::TextEmote(std::string_view text, float radius, WorldObject const* /*= nullptr*/, bool /*= false*/)
+{
+    std::string _text(text);
+    sScriptMgr->OnPlayerChat(this, CHAT_MSG_EMOTE, LANG_UNIVERSAL, _text);
+
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_EMOTE, LANG_UNIVERSAL, this, this, _text);
+    if (0 >= radius) radius = sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE);
+    SendMessageToSetInRange(&data, radius, true, !GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHAT), true);
 }
 
 void Player::TextEmote(uint32 textId, WorldObject const* target /*= nullptr*/, bool /*isBossEmote = false*/)
